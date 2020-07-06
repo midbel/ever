@@ -1,12 +1,29 @@
 #ifndef __EVER_H__
 #define __EVER_H__
 
+#include <iostream>
+#include <exception>
 #include <vector>
 #include <tuple>
 
 namespace ever {
 
   bool is_leap(int year);
+
+  class parse_error: public std::exception {
+  public:
+    parse_error(std::string m): msg(m) {}
+    virtual ~parse_error() {}
+
+    virtual const char* what() const throw() {
+      if (!msg.size()) {
+        return "unexpected error";
+      }
+      return msg.c_str();
+    }
+  private:
+    std::string msg;
+  };
 
   class instant {
   public:

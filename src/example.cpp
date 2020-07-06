@@ -4,6 +4,7 @@
 
 int main(int argc, char** argv) {
   using std::cout;
+  using std::cerr;
   using std::endl;
   using std::fixed;
   using std::setprecision;
@@ -36,7 +37,17 @@ int main(int argc, char** argv) {
     << c.year_day()
     << endl;
 
+  cout << "----" << endl;
+
   ever::instant unix{0};
   cout << unix.to_string() << endl;
   cout << "julian day: " << fixed << setprecision(3) << unix.jd() << endl;
+
+  cout << "----" << endl;
+  try {
+    auto it = ever::instant::parse("%Y-%M-%D %h:%m:%s", "2020-07-06 15:37:56");
+    cout << it.to_string() << endl;
+  } catch(ever::parse_error &e) {
+    cerr << e.what() << endl;
+  }
 }

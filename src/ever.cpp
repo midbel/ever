@@ -10,6 +10,8 @@ namespace ever {
   const unsigned days4Years = (365 * 4) + 1;
   const unsigned daysYears = 365;
 
+  const unsigned secondsPerMin = 60;
+  const unsigned secondsPerHour = 60*60;
   const unsigned secondsPerDay = 60*60*24;
   const unsigned secondsPerWeek = secondsPerDay*7;
 
@@ -18,7 +20,107 @@ namespace ever {
   }
 
   instant instant::parse(std::string pattern, std::string str) {
-    return instant();
+    auto it = pattern.begin();
+    auto in = str.begin();
+    auto beg = in;
+
+    long long timestamp = 0;
+    long long year = 0;
+    long long yday = -1;
+    long long month = -1;
+    long long day = -1;
+    std::string tmp;
+
+    while (*it) {
+      if (*it == '%') {
+        it = std::next(it);
+        switch (*it) {
+          case 'Y':
+          beg = in;
+          in = std::next(in, 4);
+
+          std::stoll(std::string(beg, in));
+          break;
+          case 'M':
+          if (yday > 0) {
+            throw parse_error("day of year already set while parsing month!");
+          }
+          beg = in;
+          in = std::next(in, 2);
+
+          tmp = std::string(beg, in);
+          month = std::stoll(tmp.substr(tmp.find_first_not_of('0')));
+          if (month < 1 || month > 12) {
+            throw parse_error("month should be between 1 and 12");
+          }
+          timestamp += year_days[month-1] * secondsPerDay;
+          break;
+          case 'D':
+          if (yday > 0) {
+            throw parse_error("day of year already set while parsing day of month!");
+          }
+          beg = in;
+          in = std::next(in, 2);
+
+          tmp = std::string(beg, in);
+          day = std::stoll(tmp.substr(tmp.find_first_not_of('0')));
+          if (day < 1 || day > 31) {
+            throw parse_error("day of month should be between 1 and 31");
+          }
+
+          timestamp += (day-1) * secondsPerDay;
+          break;
+          case 'j':
+          if (day > 0 || month > 0) {
+            throw parse_error("day and/or month already set while parsing day of year!");
+          }
+          beg = in;
+          in = std::next(in, 2);
+
+          tmp = std::string(beg, in);
+          yday = std::stoll(tmp.substr(tmp.find_first_not_of('0')));
+          if (yday < 1 || yday > 366) {
+            throw parse_error("day of year should be between 1 and 366");
+          }
+          timestamp += (yday - 1) * secondsPerDay;
+          break;
+          case 'h':
+          beg = in;
+          in = std::next(in, 2);
+
+          tmp = std::string(beg, in);
+          timestamp += std::stoll(tmp.substr(tmp.find_first_not_of('0'))) * secondsPerHour;
+          break;
+          case 'm':
+          beg = in;
+          in = std::next(in, 2);
+
+          tmp = std::string(beg, in);
+          timestamp += std::stoll(tmp.substr(tmp.find_first_not_of('0'))) * secondsPerMin;
+          break;
+          case 's':
+          beg = in;
+          in = std::next(in, 2);
+
+          tmp = std::string(beg, in);
+          timestamp += std::stoll(tmp.substr(tmp.find_first_not_of('0')));
+          break;
+          default:
+          throw parse_error("unknown specifier");
+        }
+      } else {
+        if (*it != *in) {
+          std::cout << *it << " -- " << *in << std::endl;
+          throw parse_error("unexpected character");
+        }
+        in = std::next(in);
+      }
+      it = std::next(it);
+    }
+    if (*in) {
+      throw parse_error("fail to parse input string");
+    }
+    return instant(timestamp);
   }
 
   instant::instant(): timestamp(std::time(nullptr)) {}
