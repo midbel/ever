@@ -63,7 +63,7 @@ namespace ever {
 
     instant to_gps() const;
 
-    std::string format(std::string pattern = "%R") const;
+    std::string format(std::string pattern = "%Y-%M-%D %h:%m:%s") const;
     std::string to_string() const;
 
   private:

@@ -299,32 +299,6 @@ namespace ever {
           case 's':
           os << std::setw(2) << std::setfill('0') << s;
           break;
-          case 'R':
-          os << std::setw(4) << std::setfill('0') << y
-            << '-'
-            << std::setw(2) << std::setfill('0') << mon
-            << '-'
-            << std::setw(2) << std::setfill('0') << d
-            << 'T'
-            << std::setw(2) << std::setfill('0') << h
-            << ':'
-            << std::setw(2) << std::setfill('0') << min
-            << ':'
-            << std::setw(2) << std::setfill('0') << s;
-          break;
-          case 'I':
-          os << std::setw(4) << std::setfill('0') << y
-            << '-'
-            << std::setw(2) << std::setfill('0') << mon
-            << '-'
-            << std::setw(2) << std::setfill('0') << d
-            << ' '
-            << std::setw(2) << std::setfill('0') << h
-            << ':'
-            << std::setw(2) << std::setfill('0') << min
-            << ':'
-            << std::setw(2) << std::setfill('0') << s;
-          break;
           default:
           os << "?";
           break;
