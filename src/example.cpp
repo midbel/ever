@@ -1,9 +1,12 @@
 #include <iostream>
+#include <iomanip>
 #include "ever.h"
 
 int main(int argc, char** argv) {
   using std::cout;
   using std::endl;
+  using std::fixed;
+  using std::setprecision;
 
   ever::instant a(1593807098); // 2020-07-03T20:11:38Z
   ever::instant b(-1874817877); // 1910-08-04T17:15:23Z
@@ -12,7 +15,6 @@ int main(int argc, char** argv) {
   cout << a.format("%Y-%M-%D %h:%m:%s") << " - " << a.format("%Y/%j") << endl;
   cout << b.format("%Y-%M-%D %h:%m:%s") << " - " << b.format("%Y/%j") << endl;
   cout << c.format("%Y-%M-%D %h:%m:%s") << " - " << c.format("%Y/%j") << endl;
-  cout << c.format() << " - " << c.format("%Y/%j") << endl;
 
   cout << "year: " << a.year()
     << " - month: " << a.month()
@@ -33,4 +35,8 @@ int main(int argc, char** argv) {
     << " - yearday: "
     << c.year_day()
     << endl;
+
+  ever::instant unix{0};
+  cout << unix.to_string() << endl;
+  cout << "julian day: " << fixed << setprecision(3) << unix.jd() << endl;
 }

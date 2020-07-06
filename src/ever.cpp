@@ -84,6 +84,26 @@ namespace ever {
     return std::get<2>(split_time());
   }
 
+  double instant::jd() const {
+    int y, m, d, h, s;
+    std::tie(y, m, d) = split_date();
+
+    int day = (1461 * (y + 4800 + (m - 14) / 12)) / 4;
+    day += (367 * (m - 2 - 12 * ((m - 14) / 12))) / 12;
+    day -= (3 * ((y + 4900 + (m - 14) / 12) / 100)) / 4;
+    day += d - 32075;
+
+    std::tie(h, m, s) = split_time();
+
+    double frac = (((s / 60.0) + m) / 60.0) / 24.0;
+
+    return day+frac-0.5;
+  }
+
+  double instant::mjd() const {
+    return jd() - 2400000.5;
+  }
+
   long long instant::diff(const instant &w) const {
     return timestamp - w.timestamp;
   }

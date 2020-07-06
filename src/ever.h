@@ -32,6 +32,9 @@ namespace ever {
     int minutes() const;
     int seconds() const;
 
+    double jd() const;
+    double mjd() const;
+
     long long diff(const instant &w) const;
     instant add(int sec) const;
     instant add(int y, int m, int d) const;
