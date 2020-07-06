@@ -29,17 +29,31 @@ namespace ever {
     long long yday = -1;
     long long month = -1;
     long long day = -1;
-    std::string tmp;
+
+    auto atoi = [](std::string tmp) {
+      if (tmp == "00") {
+        return 0;
+      }
+      tmp = tmp.substr(tmp.find_first_not_of('0'));
+      return std::stoi(tmp);
+    };
 
     while (*it) {
       if (*it == '%') {
         it = std::next(it);
+        if (*it == '%') {
+          if (*it != *in) {
+            throw parse_error("unexpected character");
+          }
+          in = std::next(in);
+          continue;
+        }
         switch (*it) {
           case 'Y':
           beg = in;
           in = std::next(in, 4);
 
-          std::stoll(std::string(beg, in));
+          atoi(std::string(beg, in));
           break;
           case 'M':
           if (yday > 0) {
@@ -48,8 +62,7 @@ namespace ever {
           beg = in;
           in = std::next(in, 2);
 
-          tmp = std::string(beg, in);
-          month = std::stoll(tmp.substr(tmp.find_first_not_of('0')));
+          month = atoi(std::string(beg, in));
           if (month < 1 || month > 12) {
             throw parse_error("month should be between 1 and 12");
           }
@@ -62,8 +75,7 @@ namespace ever {
           beg = in;
           in = std::next(in, 2);
 
-          tmp = std::string(beg, in);
-          day = std::stoll(tmp.substr(tmp.find_first_not_of('0')));
+          day = atoi(std::string(beg, in));
           if (day < 1 || day > 31) {
             throw parse_error("day of month should be between 1 and 31");
           }
@@ -77,8 +89,7 @@ namespace ever {
           beg = in;
           in = std::next(in, 2);
 
-          tmp = std::string(beg, in);
-          yday = std::stoll(tmp.substr(tmp.find_first_not_of('0')));
+          yday = atoi(std::string(beg, in));
           if (yday < 1 || yday > 366) {
             throw parse_error("day of year should be between 1 and 366");
           }
@@ -88,22 +99,19 @@ namespace ever {
           beg = in;
           in = std::next(in, 2);
 
-          tmp = std::string(beg, in);
-          timestamp += std::stoll(tmp.substr(tmp.find_first_not_of('0'))) * secondsPerHour;
+          timestamp += atoi(std::string(beg, in)) * secondsPerHour;
           break;
           case 'm':
           beg = in;
           in = std::next(in, 2);
 
-          tmp = std::string(beg, in);
-          timestamp += std::stoll(tmp.substr(tmp.find_first_not_of('0'))) * secondsPerMin;
+          timestamp += atoi(std::string(beg, in)) * secondsPerMin;
           break;
           case 's':
           beg = in;
           in = std::next(in, 2);
 
-          tmp = std::string(beg, in);
-          timestamp += std::stoll(tmp.substr(tmp.find_first_not_of('0')));
+          timestamp += atoi(std::string(beg, in));
           break;
           default:
           throw parse_error("unknown specifier");
