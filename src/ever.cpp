@@ -33,7 +33,7 @@ namespace ever {
     int second = 0;
 
     auto atoi = [](std::string tmp) {
-      if (tmp == "00") {
+      if (tmp == "00" || tmp == "000") {
         return 0;
       }
       tmp = tmp.substr(tmp.find_first_not_of('0'));
@@ -126,7 +126,6 @@ namespace ever {
         }
       } else {
         if (*it != *in) {
-          std::cout << *it << " -- " << *in << std::endl;
           throw parse_error("unexpected character");
         }
         in = std::next(in);
@@ -218,6 +217,46 @@ namespace ever {
   }
 
   instant::instant(const instant &w): timestamp(w.timestamp) {}
+
+  bool instant::operator==(const instant &w) const {
+    return equal(w);
+  }
+
+  bool instant::operator!=(const instant &w) const {
+    return !equal(w);
+  }
+
+  bool instant::operator<(const instant &w) const {
+    return is_before(w);
+  }
+
+  bool instant::operator<=(const instant &w) const {
+    return is_before(w) || equal(w);
+  }
+
+  bool instant::operator>(const instant &w) const {
+    return is_after(w);
+  }
+
+  bool instant::operator>=(const instant &w) const {
+    return is_after(w) || equal(w);
+  }
+
+  instant instant::operator+(int w) const {
+    return add(w);
+  }
+
+  instant instant::operator+=(int w) const {
+    return add(w);
+  }
+
+  instant instant::operator-(int w)  const {
+    return add(-w);
+  }
+
+  instant instant::operator-=(int w)  const {
+    return add(-w);
+  }
 
   long long instant::unix() const {
     return timestamp;

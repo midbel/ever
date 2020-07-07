@@ -1,7 +1,6 @@
 #ifndef __EVER_H__
 #define __EVER_H__
 
-#include <iostream>
 #include <exception>
 #include <vector>
 #include <tuple>
@@ -34,6 +33,17 @@ namespace ever {
     instant(long long w);
     instant(int year, int mon, int day, int hour=0, int min=0, int sec=0);
     instant(const instant &w);
+
+    bool operator==(const instant &w) const;
+    bool operator!=(const instant &w) const;
+    bool operator<(const instant &w) const;
+    bool operator<=(const instant &w) const;
+    bool operator>(const instant &w) const;
+    bool operator>=(const instant &w) const;
+    instant operator+(int w) const;
+    instant operator+=(int w) const;
+    instant operator-(int w) const;
+    instant operator-=(int w) const;
 
     long long unix() const;
     std::tuple<int,int,int> date() const;
