@@ -17,26 +17,6 @@ int main(int argc, char** argv) {
   cout << b.format("%Y-%M-%D %h:%m:%s") << " - " << b.format("%Y/%j") << endl;
   cout << c.format("%Y-%M-%D %h:%m:%s") << " - " << c.format("%Y/%j") << endl;
 
-  cout << "year: " << a.year()
-    << " - month: " << a.month()
-    << " - day: " << a.month_day()
-    << " - yearday: " << a.year_day()
-    << " - week day: " << a.week_day()
-    << " - iso week day: " << a.iso_week_day()
-    << endl;
-  cout << "year: " << b.year()
-    << " - month: " << b.month()
-    << " - day: " << b.month_day()
-    << " - yearday: "
-    << b.year_day()
-    << endl;
-  cout << "year: " << c.year()
-    << " - month: " << c.month()
-    << " - day: " << c.month_day()
-    << " - yearday: "
-    << c.year_day()
-    << endl;
-
   cout << "----" << endl;
 
   ever::instant unix{0};
@@ -46,8 +26,43 @@ int main(int argc, char** argv) {
   cout << "----" << endl;
   try {
     auto it = ever::instant::parse("%Y-%M-%D %h:%m:%s", "2020-07-06 15:37:56");
-    cout << it.to_string() << endl;
+    cout << "2020-07-06 15:37:56: " << it.to_string() << endl;
   } catch(ever::parse_error &e) {
-    cerr << e.what() << endl;
+    cerr << "2020-07-06 15:37:56: " << e.what() << endl;
+  }
+  cout << "----" << endl;
+  try {
+    auto it = ever::instant::parse("%Y-%M-%D %h:%m:%s", "1492-01-28 07:59:01");
+    cout << "1492-01-28 07:59:01: " << it.to_string() << endl;
+  } catch(ever::parse_error &e) {
+    cerr << "1492-01-28 07:59:01: " << e.what() << endl;
+  }
+  cout << "----" << endl;
+  try {
+    auto it = ever::instant::parse("%Y-%M-%D %h:%m:%s", "1597-11-24 13:18:57");
+    cout << "1597-11-24 13:18:57: " << it.to_string() << endl;
+  } catch(ever::parse_error &e) {
+    cerr << "1597-11-24 13:18:57: " << e.what() << endl;
+  }
+  cout << "----" << endl;
+  try {
+    auto it = ever::instant::parse("%Y-%M-%D %h:%m:%s", "1854-11-24 13:18:57");
+    cout << "1854-11-24 13:18:57: " << it.to_string() << endl;
+  } catch(ever::parse_error &e) {
+    cerr << "1854-11-24 13:18:57: " << e.what() << endl;
+  }
+  cout << "----" << endl;
+  try {
+    auto it = ever::instant::parse("%Y-%M-%D %h:%m:%s", "0454-09-08 06:34:18");
+    cout << "454-09-08 06:34:18: " << it.to_string() << endl;
+  } catch(ever::parse_error &e) {
+    cerr << "454-09-08 06:34:18: " << e.what() << endl;
+  }
+  cout << "----" << endl;
+  try {
+    auto it = ever::instant::parse("%Y/%j", "2012/163"); // 2012-06-11
+    cout << "2012/163: " << it.to_string() << endl;
+  } catch(ever::parse_error &e) {
+    cerr << "2012/163: " << e.what() << endl;
   }
 }

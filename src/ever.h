@@ -32,7 +32,7 @@ namespace ever {
 
     instant();
     instant(long long w);
-    instant(int y, int m, int d);
+    instant(int year, int mon, int day, int hour=0, int min=0, int sec=0);
     instant(const instant &w);
 
     long long unix() const;
@@ -54,7 +54,7 @@ namespace ever {
 
     long long diff(const instant &w) const;
     instant add(int sec) const;
-    instant add(int y, int m, int d) const;
+    instant add(int year, int mon, int day) const;
 
     bool is_zero();
     bool is_before(const instant &w) const;
@@ -69,6 +69,7 @@ namespace ever {
   private:
     static int epoch;
     static std::vector<int> year_days;
+    static std::vector<int> month_days;
     static std::vector<long long> leap_seconds;
 
     long long timestamp;

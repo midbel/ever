@@ -24,11 +24,13 @@ namespace ever {
     auto in = str.begin();
     auto beg = in;
 
-    long long timestamp = 0;
-    long long year = 0;
-    long long yday = -1;
-    long long month = -1;
-    long long day = -1;
+    int year = 0;
+    int yday = -1;
+    int month = -1;
+    int day = -1;
+    int hour = 0;
+    int minute = 0;
+    int second = 0;
 
     auto atoi = [](std::string tmp) {
       if (tmp == "00") {
@@ -51,9 +53,11 @@ namespace ever {
         switch (*it) {
           case 'Y':
           beg = in;
+          if (*in == '-') {
+            in = std::next(in);
+          }
           in = std::next(in, 4);
-
-          atoi(std::string(beg, in));
+          year = atoi(std::string(beg, in));
           break;
           case 'M':
           if (yday > 0) {
@@ -61,12 +65,10 @@ namespace ever {
           }
           beg = in;
           in = std::next(in, 2);
-
           month = atoi(std::string(beg, in));
           if (month < 1 || month > 12) {
             throw parse_error("month should be between 1 and 12");
           }
-          timestamp += year_days[month-1] * secondsPerDay;
           break;
           case 'D':
           if (yday > 0) {
@@ -79,39 +81,45 @@ namespace ever {
           if (day < 1 || day > 31) {
             throw parse_error("day of month should be between 1 and 31");
           }
-
-          timestamp += (day-1) * secondsPerDay;
           break;
           case 'j':
           if (day > 0 || month > 0) {
             throw parse_error("day and/or month already set while parsing day of year!");
           }
           beg = in;
-          in = std::next(in, 2);
+          in = std::next(in, 3);
 
           yday = atoi(std::string(beg, in));
           if (yday < 1 || yday > 366) {
             throw parse_error("day of year should be between 1 and 366");
           }
-          timestamp += (yday - 1) * secondsPerDay;
           break;
           case 'h':
           beg = in;
           in = std::next(in, 2);
 
-          timestamp += atoi(std::string(beg, in)) * secondsPerHour;
+          hour = atoi(std::string(beg, in));
+          if (hour < 0 || hour > 23) {
+            throw parse_error("hour should be between 0 and 23");
+          }
           break;
           case 'm':
           beg = in;
           in = std::next(in, 2);
 
-          timestamp += atoi(std::string(beg, in)) * secondsPerMin;
+          minute = atoi(std::string(beg, in));
+          if (minute < 0 || minute > 59) {
+            throw parse_error("minute should be between 0 and 59");
+          }
           break;
           case 's':
           beg = in;
           in = std::next(in, 2);
 
-          timestamp += atoi(std::string(beg, in));
+          second += atoi(std::string(beg, in));
+          if (second < 0 || second > 59) {
+            throw parse_error("second should be between 0 and 59");
+          }
           break;
           default:
           throw parse_error("unknown specifier");
@@ -128,14 +136,86 @@ namespace ever {
     if (*in) {
       throw parse_error("fail to parse input string");
     }
-    return instant(timestamp);
+    if (yday > 0) {
+      month++;
+      for (auto d: year_days) {
+        if (yday < d) {
+          break;
+        }
+        month++;
+      }
+      day = yday - year_days[month-1] - 1;
+    } else {
+      if (day > month_days[month]) {
+        throw parse_error("invalid day for given month");
+      }
+    }
+    return instant(year, month, day, hour, minute, second);
   }
 
   instant::instant(): timestamp(std::time(nullptr)) {}
 
   instant::instant(long long w): timestamp(w) {}
 
-  instant::instant(int y, int m, int d) {}
+  std::pair<int, int> normalize(int high, int low, int base) {
+    if (low < 0) {
+      int n = ((-low -1) / base) + 1;
+      high -= n;
+      low += n * base;
+    }
+    if (low > base) {
+      int n = low/base;
+      high += n;
+      low -= n * base;
+    }
+    return std::make_pair(high, low);
+  }
+
+  instant::instant(int year, int mon, int day, int hour, int min, int sec): timestamp(0) {
+    std::pair<int, int> norm;
+    norm = normalize(year, mon, 12);
+    year = norm.first;
+    mon = norm.second;
+
+    norm = normalize(min, sec, 60);
+    min = norm.first;
+    sec = norm.second;
+
+    norm = normalize(hour, min, 60);
+    hour = norm.first;
+    min = norm.second;
+
+    norm = normalize(day, hour, 24);
+    day = norm.first;
+    hour = norm.second;
+
+    long long y = year - epoch;
+    long long n = y / 400;
+    y -= 400 * n;
+    long long d = days400Years * n;
+
+    n = y / 100;
+    y -= 100 * n;
+    d += days100Years * n;
+
+    n = y / 4;
+    y -= 4 * n;
+    d += days4Years * n;
+
+    n = y;
+    d += daysYears * n;
+
+    d += year_days[mon-1];
+    if (is_leap(year) && mon > 2) {
+      d++;
+    }
+    d += day - 1;
+
+    timestamp += d * secondsPerDay;
+    timestamp += hour * secondsPerHour;
+    timestamp += min * secondsPerMin;
+    timestamp += sec;
+  }
 
   instant::instant(const instant &w): timestamp(w.timestamp) {}
 
@@ -223,7 +303,11 @@ namespace ever {
   }
 
   instant instant::add(int y, int m, int d) const {
-    return instant();
+    int year, mon, day, hour, min, sec;
+    std::tie(year, mon, day) = split_date();
+    std::tie(hour, min, sec) = split_time();
+
+    return instant(year+y, mon+m, day+d, hour, min, sec);
   }
 
   bool instant::is_before(const instant &w) const {
@@ -359,6 +443,9 @@ namespace ever {
     if (pre) {
       year = -year - 1;
       d = daysYears - d;
+      if (!is_leap(year)) {
+        d--;
+      }
     }
 
     year += epoch;
@@ -366,7 +453,7 @@ namespace ever {
       if (d > 31+29-1) {
         d--;
       } else if (d == 31+29-1) {
-        d = 29;
+        return std::make_tuple(year, 2, 29);
       }
     }
 
@@ -400,6 +487,7 @@ namespace ever {
       m = 59-m;
       h = 23-h;
     }
+    // std::cout << ">> time: " << h << ":" << m << ":" << s << std::endl;
     return std::make_tuple(h, m, s);
   }
 
@@ -419,6 +507,22 @@ namespace ever {
     31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31,
     31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30,
     31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30 + 31,
+  };
+
+  std::vector<int> instant::month_days{
+    0,
+    31,
+    28,
+    31,
+    30,
+    31,
+    30,
+    31,
+    31,
+    30,
+    31,
+    30,
+    31,
   };
 
   std::vector<long long> instant::leap_seconds{
