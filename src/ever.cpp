@@ -160,10 +160,7 @@ namespace ever {
 
   instant::instant(long long w): timestamp(w) {}
 
-  std::pair<int, int> normalize(int high, int low, int base, bool zero = true) {
-    if (!zero && !low) {
-      low = base;
-    }
+  std::pair<int, int> normalize(int high, int low, int base) {
     if (low < 0) {
       int n = ((-low -1) / base) + 1;
       high -= n;
@@ -179,7 +176,7 @@ namespace ever {
 
   instant::instant(int year, int mon, int day, int hour, int min, int sec): instant() {
     std::pair<int, int> norm;
-    norm = normalize(year, mon, 12, false);
+    norm = normalize(year, mon, 12);
     year = norm.first;
     mon = norm.second;
 
@@ -212,8 +209,11 @@ namespace ever {
     d += daysYears * n;
 
     d += year_days[mon-1];
-    if (is_leap(year) && mon > 2) {
+    if (year > epoch && is_leap(year) && mon > 2) {
       d++;
+    }
+    if (year < epoch && year%4==3) {
+      d--;
     }
     d += day - 1;
 
@@ -353,7 +353,18 @@ namespace ever {
     std::tie(year, mon, day) = split_date();
     std::tie(hour, min, sec) = split_time();
 
-    return instant(year+y, mon+m, day+d, hour, min, sec);
+    year += y;
+    mon += m;
+    day += d;
+
+    if (mon <= 0) {
+      mon = 12 + mon;
+      year--;
+    }
+    if (day <= 0) {
+      day = month_days[mon-1] + day;
+    }
+    return instant(year, mon, day, hour, min, sec);
   }
 
   bool instant::is_before(const instant &w) const {
@@ -462,6 +473,9 @@ namespace ever {
   }
 
   std::tuple<int, int, int> instant::split_date() const {
+    if (!timestamp) {
+      return std::make_tuple(epoch, 1, 1);
+    }
     long long base = timestamp;
     bool pre = base < 0;
     if (pre) {
@@ -490,7 +504,13 @@ namespace ever {
     if (pre) {
       year = -year - 1;
       d = daysYears - d;
-      if (epoch%4 != (epoch+year)%4) {
+      if (is_leap(year + epoch) && d >= 31+29) {
+        d++;
+      }
+      if (timestamp % secondsPerDay == 0) {
+        d++;
+      }
+      if (epoch % 4 != (epoch + year) % 4) {
         d--;
       }
     }
@@ -502,6 +522,10 @@ namespace ever {
       } else if (d == 31+29-1) {
         return std::make_tuple(year, 2, 29);
       }
+    }
+
+    if (pre && year % 4 == 3) {
+      d++;
     }
 
     long long mon = d/31;
@@ -516,7 +540,6 @@ namespace ever {
     mon++;
 
     long long day = d - beg + 1;
-    // std::cout << "\ndate: " << year << "-" << mon << "-" << day << ": yday: " << d << std::endl;
     return std::make_tuple(year, mon, day);
   }
 
@@ -526,6 +549,9 @@ namespace ever {
       seconds = -seconds;
     }
     seconds = seconds % secondsPerDay;
+    if (!seconds) {
+      return std::make_tuple(0, 0, 0);
+    }
 
     int h = seconds / secondsPerHour;
     seconds -= h * secondsPerHour;
@@ -540,7 +566,6 @@ namespace ever {
       }
       h = 23 - h;
     }
-    // std::cout << "\n>> time: " << h << ":" << m << ":" << s << std::endl;
     return std::make_tuple(h, m, s);
   }
 

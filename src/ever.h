@@ -1,6 +1,7 @@
 #ifndef __EVER_H__
 #define __EVER_H__
 
+#include <iostream>
 #include <exception>
 #include <vector>
 #include <tuple>

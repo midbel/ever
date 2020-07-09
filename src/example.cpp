@@ -5,8 +5,10 @@
 void show_date(std::string str) {
   try {
     auto it = ever::instant::parse("%Y-%M-%D %h:%m:%s", str);
+    std::string got = it.to_string();
     std::cout << "* " << str << ": "
-      << it.to_string()
+      << (got == str ? 'v' : 'x') << " - "
+      << got
       << " - " << it.unix()
       << std::endl;
   } catch(ever::parse_error &e) {
@@ -19,49 +21,58 @@ void make_date(long long time) {
   std::cout << it.format("%Y-%M-%D %h:%m:%s") << std::endl;
 }
 
+void modify_date(ever::instant it, int year, int mon, int day) {
+  it = it.add(year, mon, day);
+  std::cout << it.format("%Y-%M-%D %h:%m:%s") << " - " << it.unix() << std::endl;
+}
+
 int main(int argc, char** argv) {
-  using std::cout;
-  using std::cerr;
-  using std::endl;
-  using std::fixed;
-  using std::setprecision;
 
-  std::vector<long long> times{
-    1593807098, // 2020-07-03T20:11:38Z
-    -1874817877, // 1910-08-04T17:15:23Z
-    -14497598677, // 1510-08-04T17:15:23Z
-  };
-  for (auto t: times) {
-    make_date(t);
-  }
-
-  cout << "----" << endl;
+  std::cout << "----" << std::endl;
   std::vector<std::string> dates {
     "0454-09-08 06:34:18",
     "1492-01-28 07:59:01",
-    // "1564-11-24 13:18:57",
     "1569-11-24 13:18:57",
     "1570-11-24 07:59:57",
     "1570-10-14 23:18:59",
     "1570-06-01 11:11:12",
     "1570-02-22 14:09:45",
-    // "1571-11-24 13:18:57",
     "1597-11-24 09:59:59",
-    // "1797-11-24 13:18:57",
     "1854-11-24 01:02:00",
-    // "1967-11-24 13:18:57",
-    // "1855-11-24 13:18:57",
-    // "1856-11-24 13:18:57",
     "1137-02-28 00:00:45",
     "1856-01-24 13:18:57",
     "2020-07-06 23:59:59",
+    "1969-12-01 23:59:59",
+    "1564-11-24 13:18:57",
+    "1564-12-01 13:18:57",
+    "1856-11-24 13:18:57",
+    "1856-12-01 00:00:00",
+    "1571-11-24 13:18:57",
+    "1797-11-24 13:18:57",
+    "1967-11-24 13:18:57",
+    "1855-11-24 13:18:57",
+    "1967-12-01 23:59:59",
+    "2019-01-03 16:07:00",
+    "2020-01-03 16:07:00",
+    "2020-12-01 00:00:00",
   };
   for (auto d: dates) {
     show_date(d);
   }
-  //
-  // cout << "----" << endl;
-  // ever::instant t{0};
-  // t = t.add(-1, -1, 0);
-  // cout << t.format("%Y-%M-%D %h:%m:%s") << " - " << t.unix() << endl;
+
+  std::cout << "----" << std::endl;
+  std::vector<std::tuple<int,int,int>> ymds{
+    std::make_tuple(-1, -1, 0),
+    std::make_tuple(-2, -2, 0),
+    std::make_tuple(-6, -2, 0),
+    std::make_tuple(-5, -2, 0),
+    // std::make_tuple(-3, -2, -15),
+    // std::make_tuple(10, 0, 5),
+    // std::make_tuple(12, 5, 10),
+    // std::make_tuple(40, 5, 10),
+  };
+  ever::instant t{0};
+  for (auto d: ymds) {
+    modify_date(t, std::get<0>(d), std::get<1>(d), std::get<2>(d));
+  }
 }
