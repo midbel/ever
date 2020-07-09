@@ -152,11 +152,18 @@ namespace ever {
     return instant(year, month, day, hour, minute, second);
   }
 
-  instant::instant(): timestamp(std::time(nullptr)) {}
+  instant instant::now() {
+    return instant(std::time(nullptr));
+  }
+
+  instant::instant(): timestamp(0) {}
 
   instant::instant(long long w): timestamp(w) {}
 
-  std::pair<int, int> normalize(int high, int low, int base) {
+  std::pair<int, int> normalize(int high, int low, int base, bool zero = true) {
+    if (!zero && !low) {
+      low = base;
+    }
     if (low < 0) {
       int n = ((-low -1) / base) + 1;
       high -= n;
@@ -170,9 +177,9 @@ namespace ever {
     return std::make_pair(high, low);
   }
 
-  instant::instant(int year, int mon, int day, int hour, int min, int sec): timestamp(0) {
+  instant::instant(int year, int mon, int day, int hour, int min, int sec): instant() {
     std::pair<int, int> norm;
-    norm = normalize(year, mon, 12);
+    norm = normalize(year, mon, 12, false);
     year = norm.first;
     mon = norm.second;
 
@@ -448,7 +455,7 @@ namespace ever {
 
   int instant::year_day(int y, int m, int d) const {
     int yd = year_days[m - 1] + d;
-    if (is_leap(y)) {
+    if (is_leap(y) && m > 2) {
       yd++;
     }
     return yd;
@@ -460,6 +467,7 @@ namespace ever {
     if (pre) {
       base = -base;
     }
+
     long long d = base / secondsPerDay;
     long long n = d / days400Years;
     long long year = 400*n;
@@ -482,7 +490,7 @@ namespace ever {
     if (pre) {
       year = -year - 1;
       d = daysYears - d;
-      if (!is_leap(year)) {
+      if (epoch%4 != (epoch+year)%4) {
         d--;
       }
     }
@@ -508,6 +516,7 @@ namespace ever {
     mon++;
 
     long long day = d - beg + 1;
+    // std::cout << "\ndate: " << year << "-" << mon << "-" << day << ": yday: " << d << std::endl;
     return std::make_tuple(year, mon, day);
   }
 
@@ -516,17 +525,22 @@ namespace ever {
     if (seconds < 0) {
       seconds = -seconds;
     }
-    int s = seconds % 60;
-    seconds /= 60;
-    int m = seconds % 60;
-    seconds /= 60;
-    int h = seconds % 24;
+    seconds = seconds % secondsPerDay;
+
+    int h = seconds / secondsPerHour;
+    seconds -= h * secondsPerHour;
+    int m = seconds / secondsPerMin;
+    int s = seconds - (m * secondsPerMin);
+
     if (timestamp < 0) {
-      s = 60-s;
-      m = 59-m;
-      h = 23-h;
+      s = s ? 60 - s : s;
+      m = 59 - m;
+      if (!s) {
+        m++;
+      }
+      h = 23 - h;
     }
-    // std::cout << ">> time: " << h << ":" << m << ":" << s << std::endl;
+    // std::cout << "\n>> time: " << h << ":" << m << ":" << s << std::endl;
     return std::make_tuple(h, m, s);
   }
 

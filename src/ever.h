@@ -27,6 +27,7 @@ namespace ever {
   class instant {
   public:
 
+    static instant now();
     static instant parse(std::string pattern, std::string str);
 
     instant();
@@ -71,6 +72,7 @@ namespace ever {
     bool is_after(const instant &w) const;
     bool equal(const instant &w) const;
 
+    // instant to_unix() const;
     instant to_gps() const;
 
     std::string format(std::string pattern = "%Y-%M-%D %h:%m:%s") const;
