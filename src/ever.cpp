@@ -209,11 +209,8 @@ namespace ever {
     d += daysYears * n;
 
     d += year_days[mon-1];
-    if (year > epoch && is_leap(year) && mon > 2) {
+    if (is_leap(year) && mon > 2) {
       d++;
-    }
-    if (year < epoch && year%4==3) {
-      d--;
     }
     d += day - 1;
 
@@ -477,10 +474,6 @@ namespace ever {
       return std::make_tuple(epoch, 1, 1);
     }
     long long base = timestamp;
-    bool pre = base < 0;
-    if (pre) {
-      base = -base;
-    }
 
     long long d = base / secondsPerDay;
     long long n = d / days400Years;
@@ -501,20 +494,6 @@ namespace ever {
     year += n;
     d -= daysYears * n;
 
-    if (pre) {
-      year = -year - 1;
-      d = daysYears - d;
-      if (is_leap(year + epoch) && d >= 31+29) {
-        d++;
-      }
-      if (timestamp % secondsPerDay == 0) {
-        d++;
-      }
-      if (epoch % 4 != (epoch + year) % 4) {
-        d--;
-      }
-    }
-
     year += epoch;
     if (is_leap(year)) {
       if (d > 31+29-1) {
@@ -522,10 +501,6 @@ namespace ever {
       } else if (d == 31+29-1) {
         return std::make_tuple(year, 2, 29);
       }
-    }
-
-    if (pre && year % 4 == 3) {
-      d++;
     }
 
     long long mon = d/31;

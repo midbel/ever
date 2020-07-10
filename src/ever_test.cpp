@@ -49,8 +49,6 @@ TEST_CASE("modify") {
   CHECK(time.unix() == 0);
   CHECK(time.add(1, 0, 0).format("%Y-%M-%D %h:%m:%s") == "1971-01-01 00:00:00");
   CHECK(time.unix() == 0);
-  CHECK(time.add(-1, 0, 0).format("%Y-%M-%D %h:%m:%s") == "1969-01-01 00:00:00");
-  CHECK(time.unix() == 0);
 }
 
 TEST_CASE("parse") {
