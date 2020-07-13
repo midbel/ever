@@ -46,6 +46,7 @@ namespace ever {
     instant operator+=(int w) const;
     instant operator-(int w) const;
     instant operator-=(int w) const;
+    instant operator-() const;
 
     long long unix() const;
     std::tuple<int,int,int> date() const;

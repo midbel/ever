@@ -29,7 +29,7 @@ void iter_dates() {
   iter_dates(460, 530);
   iter_dates(750, 810);
   iter_dates(1000, 1310);
-  iter_dates(1550, 2520);
+  iter_dates(1750, 2520);
 }
 
 void show_date(std::string str) {
@@ -139,11 +139,11 @@ void modify_date() {
 }
 
 int main(int argc, char** argv) {
-  show_date();
-  std::cout << "----" << std::endl;
-  make_date();
-  std::cout << "----" << std::endl;
+  // show_date();
+  // std::cout << "----" << std::endl;
+  // make_date();
+  // std::cout << "----" << std::endl;
   // modify_date();
   // std::cout << "----" << std::endl;
-  // iter_dates();
+  iter_dates();
 }

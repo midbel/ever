@@ -288,6 +288,10 @@ namespace ever {
     return is_after(w) || equal(w);
   }
 
+  instant instant::operator-() const {
+    return instant{-timestamp};
+  }
+
   instant instant::operator+(int w) const {
     return add(w);
   }
