@@ -16,7 +16,7 @@ namespace ever {
   const unsigned secondsPerWeek = secondsPerDay*7;
 
   bool is_leap(int year) {
-    return year % 4 == 0 && (year % 100 != 0 || year % 400 != 0);
+    return year % 400 == 0 || (year % 4 == 0 && year % 100 != 0);
   }
 
   instant instant::parse(std::string pattern, std::string str) {
@@ -209,7 +209,7 @@ namespace ever {
     d += daysYears * n;
 
     d += year_days[mon-1];
-    if (is_leap(year) && mon > 2) {
+    if (year > epoch && is_leap(year) && mon > 2) {
       d++;
     }
     d += day - 1;
@@ -218,9 +218,48 @@ namespace ever {
     timestamp += hour * secondsPerHour;
     timestamp += min * secondsPerMin;
     timestamp += sec;
+
+    if (year < epoch) {
+      timestamp += adjust_pre_epoch(year);
+    } else {
+      timestamp += adjust_post_epoch(year);
+    }
   }
 
   instant::instant(const instant &w): timestamp(w.timestamp) {}
+
+  int instant::adjust_pre_epoch(int year) {
+    int mod = year % 100;
+    int leap = year % 4;
+    if (mod < 70 && leap == 3) {
+      return -secondsPerDay;
+    }
+    int delta = 1900 - (year - mod);
+    if (year < 1900 && delta % 400 == 0 && mod > 70) {
+      return leap == 3 ? -secondsPerDay : 0;
+    }
+    if (mod >= 72 && leap < 3) {
+      return secondsPerDay;
+    }
+    return 0;
+  }
+
+  int instant::adjust_post_epoch(int year) {
+    int mod = year % 100;
+    int leap = year % 4;
+
+    int s = 0;
+    if (leap == 1) {
+      s = secondsPerDay;
+    }
+    if (mod == 0 || mod >= 70) {
+      year = mod != 0 ? year - mod - 1900 : year;
+      if (year % 400 != 0) {
+        s += secondsPerDay;
+      }
+    }
+    return s;
+  }
 
   bool instant::operator==(const instant &w) const {
     return equal(w);
@@ -350,18 +389,7 @@ namespace ever {
     std::tie(year, mon, day) = split_date();
     std::tie(hour, min, sec) = split_time();
 
-    year += y;
-    mon += m;
-    day += d;
-
-    if (mon <= 0) {
-      mon = 12 + mon;
-      year--;
-    }
-    if (day <= 0) {
-      day = month_days[mon-1] + day;
-    }
-    return instant(year, mon, day, hour, min, sec);
+    return instant(year+y, mon+m, day+d, hour, min, sec);
   }
 
   bool instant::is_before(const instant &w) const {
@@ -473,7 +501,12 @@ namespace ever {
     if (!timestamp) {
       return std::make_tuple(epoch, 1, 1);
     }
+    bool before = false;
     long long base = timestamp;
+    if (base < 0) {
+      base = -base;
+      before = true;
+    }
 
     long long d = base / secondsPerDay;
     long long n = d / days400Years;
@@ -493,6 +526,14 @@ namespace ever {
     n -= n >> 2;
     year += n;
     d -= daysYears * n;
+
+    if (before) {
+      year = -year - 1;
+      d = daysYears - d;
+      if (timestamp % secondsPerDay == 0) {
+        d++;
+      }
+    }
 
     year += epoch;
     if (is_leap(year)) {
