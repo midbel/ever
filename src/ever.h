@@ -91,8 +91,8 @@ namespace ever {
     int year_day(int y, int m, int d) const;
     std::tuple<int, int, int> split_date() const;
     std::tuple<int, int, int> split_time() const;
-    int adjust_pre_epoch(int year);
-    int adjust_post_epoch(int year);
+    int adjust_pre_epoch(int year) const;
+    int adjust_post_epoch(int year) const;
   };
 }
 

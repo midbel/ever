@@ -220,6 +220,9 @@ namespace ever {
     timestamp += sec;
 
     if (year < epoch) {
+      if (mon <= 2 && is_leap(year)) {
+        timestamp -= secondsPerDay;
+      }
       timestamp += adjust_pre_epoch(year);
     } else {
       timestamp += adjust_post_epoch(year);
@@ -228,7 +231,7 @@ namespace ever {
 
   instant::instant(const instant &w): timestamp(w.timestamp) {}
 
-  int instant::adjust_pre_epoch(int year) {
+  int instant::adjust_pre_epoch(int year) const {
     int mod = year % 100;
     int leap = year % 4;
     if (mod < 70 && leap == 3) {
@@ -244,7 +247,7 @@ namespace ever {
     return 0;
   }
 
-  int instant::adjust_post_epoch(int year) {
+  int instant::adjust_post_epoch(int year) const {
     int mod = year % 100;
     int leap = year % 4;
 
@@ -541,6 +544,22 @@ namespace ever {
         d--;
       } else if (d == 31+29-1) {
         return std::make_tuple(year, 2, 29);
+      }
+    }
+
+    int leap = year % 4;
+    if (leap == 1) {
+      d--;
+    }
+    leap = year % 100;
+    if (leap >= 70 || leap == 0) {
+      if (year > epoch) {
+        leap = leap != 0 ? (year - leap) - 1900 : year;
+      } else {
+        leap = leap != 0 ? 1900 - (year - leap) : year;
+      }
+      if (leap % 400 != 0) {
+        d--;
       }
     }
 

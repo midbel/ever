@@ -6,14 +6,20 @@
 
 void iter_dates(int from, int to) {
   for (int i = from; i <= to; i++) {
-    ever::instant it{i, 10, 14, 7, 59, 1};
+    std::string leapy = "----";
+    if (ever::is_leap(i)) {
+      leapy = "leap";
+    }
+    ever::instant it{i, 1, 24, 13, 28, 17};
     std::cout << std::setfill('0')
       << std::setw(4) << i
-      << "-10-14 07:59:01"
+      << "-01-24 13:28:17"
       << ","
       << it.to_string()
       << ","
       << it.unix()
+      << ","
+      << leapy
       << std::endl;
   }
 }
@@ -22,7 +28,7 @@ void iter_dates() {
   iter_dates(1, 100);
   iter_dates(460, 530);
   iter_dates(750, 810);
-  iter_dates(1100, 1310);
+  iter_dates(1000, 1310);
   iter_dates(1550, 2520);
 }
 
@@ -78,6 +84,7 @@ void show_date() {
 void make_date(int year, int month, int day) {
   ever::instant it{year, month, day, 7, 59, 1};
   std::cout << year << ":" << month << ":" << day << " 07:59:01"
+    << " - "
     << it.to_string()
     << " - "
     << it.year_day()
@@ -132,11 +139,11 @@ void modify_date() {
 }
 
 int main(int argc, char** argv) {
-  // show_date();
-  // std::cout << "----" << std::endl;
-  // make_date();
-  // std::cout << "----" << std::endl;
+  show_date();
+  std::cout << "----" << std::endl;
+  make_date();
+  std::cout << "----" << std::endl;
   // modify_date();
   // std::cout << "----" << std::endl;
-  iter_dates();
+  // iter_dates();
 }
