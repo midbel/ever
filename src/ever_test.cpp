@@ -5,7 +5,7 @@
 TEST_CASE("build") {
   ever::instant time;
 
-  SECTION("unix timestamp") {
+  SECTION("unix epoch") {
     auto check_time = [](ever::instant i) {
       CHECK(i.year() == 1970);
       CHECK(i.month() == 1);
@@ -20,6 +20,17 @@ TEST_CASE("build") {
     check_time(ever::instant{0});
     check_time(ever::instant{1970, 1, 1});
     check_time(ever::instant{1970, 1, 1, 0, 0, 0});
+  }
+  SECTION("dates") {
+    ever::instant i{2020, 7, 14, 13, 48, 18};
+    CHECK(i.year() == 2020);
+    CHECK(i.month() == 7);
+    CHECK(i.month_day() == 14);
+    CHECK(i.year_day() == 196);
+    CHECK(i.hour() == 13);
+    CHECK(i.minutes() == 48);
+    CHECK(i.seconds() == 18);
+    CHECK(i.unix() == 1594734498);
   }
 }
 
@@ -44,10 +55,10 @@ TEST_CASE("compare and query") {
 TEST_CASE("modify") {
   ever::instant time{0};
   CHECK(time.add(3600).format("%Y-%M-%D %h:%m:%s") == "1970-01-01 01:00:00");
-  CHECK(time.unix() == 0);
   CHECK(time.add(86400).format("%Y-%M-%D %h:%m:%s") == "1970-01-02 00:00:00");
-  CHECK(time.unix() == 0);
   CHECK(time.add(1, 0, 0).format("%Y-%M-%D %h:%m:%s") == "1971-01-01 00:00:00");
+  CHECK(time.add(-1, -1, 0).format("%Y-%M-%D %h:%m:%s") == "1968-12-01 00:00:00");
+
   CHECK(time.unix() == 0);
 }
 
@@ -117,5 +128,6 @@ TEST_CASE("format") {
 
   CHECK(time.format("%Y-%M-%D") == "1970-01-01");
   CHECK(time.format("%Y-%M-%D %h:%m:%s") == "1970-01-01 00:00:00");
+  CHECK(time.format("%Y-%M-%D %h:%m:%s.%f") == "1970-01-01 00:00:00.000");
   CHECK(time.format("%Y/%j") == "1970/001");
 }
