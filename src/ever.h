@@ -66,6 +66,7 @@ namespace ever {
     double mjd() const;
 
     long long diff(const instant &w) const;
+    long long diff_millis(const instant &w) const;
     instant add(int sec) const;
     instant add(int year, int mon, int day) const;
 
@@ -77,7 +78,7 @@ namespace ever {
     // instant to_unix() const;
     instant to_gps() const;
 
-    std::string format(std::string pattern = "%Y-%M-%D %h:%m:%s") const;
+    std::string format(std::string pattern = "%Y-%M-%D %h:%m:%s.%f") const;
     std::string to_string() const;
 
   private:

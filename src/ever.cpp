@@ -391,6 +391,10 @@ namespace ever {
     return get_seconds() - w.get_seconds();
   }
 
+  long long instant::diff_millis(const instant &w) const {
+    return timestamp - w.timestamp;
+  }
+
   instant instant::add(int sec) const {
     return instant(get_seconds()+sec, get_millis());
   }
