@@ -81,6 +81,8 @@ namespace ever {
     std::string to_string() const;
 
   private:
+    enum class epoch_t {unix, gps};
+
     static int epoch;
     static int millis;
     static std::vector<int> year_days;
@@ -88,6 +90,7 @@ namespace ever {
     static std::vector<long long> leap_seconds;
 
     long long timestamp;
+    epoch_t zero = epoch_t::unix;
 
     int year_day(int y, int m, int d) const;
 

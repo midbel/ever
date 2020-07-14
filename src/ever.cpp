@@ -437,7 +437,16 @@ namespace ever {
     return timestamp == 0;
   }
 
+  // instant instant::to_unix() const {
+  //   if (zero == epoch_t::unix) {
+  //     return *this;
+  //   }
+  // }
+
   instant instant::to_gps() const {
+    if (zero == epoch_t::gps) {
+      return *this;
+    }
     int sec = 0;
     for (auto s: leap_seconds) {
       if (timestamp < s * millis) {
@@ -445,7 +454,9 @@ namespace ever {
       }
       sec++;
     }
-    return add(sec);
+    auto i = add(sec);
+    i.zero = epoch_t::gps;
+    return i;
   }
 
   // %S: timestamp
