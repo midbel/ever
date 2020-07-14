@@ -392,7 +392,7 @@ namespace ever {
   }
 
   instant instant::add(int sec) const {
-    return instant(timestamp+(sec*millis));
+    return instant(get_seconds()+sec, get_millis());
   }
 
   instant instant::add(int y, int m, int d) const {
@@ -415,6 +415,9 @@ namespace ever {
         year--;
       }
       day = month_days[mon] + day;
+      if (is_leap(year) && mon == 2) {
+        day--;
+      }
     }
     return instant(year, mon, day, hour, min, sec);
   }
@@ -498,6 +501,7 @@ namespace ever {
           break;
           case 's':
           os << std::setw(2) << std::setfill('0') << s;
+          break;
           case 'f':
           os << std::setw(3) << std::setfill('0') << get_millis();
           break;
