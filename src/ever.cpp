@@ -396,7 +396,23 @@ namespace ever {
     std::tie(year, mon, day) = split_date();
     std::tie(hour, min, sec) = split_time();
 
-    return instant(year+y, mon+m, day+d, hour, min, sec);
+    year += y;
+    mon += m;
+    day += d;
+
+    while (mon <= 0) {
+      year--;
+      mon = 12 + mon;
+    }
+    while (day <= 0) {
+      mon--;
+      if (mon == 0) {
+        mon = 12;
+        year--;
+      }
+      day = month_days[mon] + day;
+    }
+    return instant(year, mon, day, hour, min, sec);
   }
 
   bool instant::is_before(const instant &w) const {

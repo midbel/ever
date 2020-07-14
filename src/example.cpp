@@ -128,9 +128,13 @@ void modify_date() {
     std::make_tuple(-6, -11, -8),
     std::make_tuple(-5, 7, 16),
     std::make_tuple(-3, -2, -15),
+    std::make_tuple(-3, -16, -36),
+    std::make_tuple(-3, 16, 83),
+    std::make_tuple(-3, 41, 45),
     std::make_tuple(10, 0, 5),
     std::make_tuple(12, 5, 10),
     std::make_tuple(40, 5, 10),
+    std::make_tuple(40, 5, -31),
   };
   ever::instant t{1970, 1, 1, 13, 48, 19};
   for (auto d: mods) {
@@ -139,11 +143,11 @@ void modify_date() {
 }
 
 int main(int argc, char** argv) {
-  // show_date();
+  show_date();
+  std::cout << "----" << std::endl;
+  make_date();
+  std::cout << "----" << std::endl;
+  modify_date();
   // std::cout << "----" << std::endl;
-  // make_date();
-  // std::cout << "----" << std::endl;
-  // modify_date();
-  // std::cout << "----" << std::endl;
-  iter_dates();
+  // iter_dates();
 }

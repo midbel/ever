@@ -87,7 +87,6 @@ namespace ever {
     static std::vector<long long> leap_seconds;
 
     long long timestamp;
-    short millis;
 
     int year_day(int y, int m, int d) const;
     std::tuple<int, int, int> split_date() const;
