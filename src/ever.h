@@ -32,7 +32,7 @@ namespace ever {
     static instant parse(std::string pattern, std::string str);
 
     instant();
-    instant(long long w);
+    instant(long long w, int ms = 0);
     instant(int year, int mon, int day, int hour=0, int min=0, int sec=0);
     instant(const instant &w);
 
@@ -82,6 +82,7 @@ namespace ever {
 
   private:
     static int epoch;
+    static int millis;
     static std::vector<int> year_days;
     static std::vector<int> month_days;
     static std::vector<long long> leap_seconds;
@@ -89,8 +90,13 @@ namespace ever {
     long long timestamp;
 
     int year_day(int y, int m, int d) const;
+
+    int get_millis() const;
+    long long get_seconds() const;
+
     std::tuple<int, int, int> split_date() const;
     std::tuple<int, int, int> split_time() const;
+
     int adjust_pre_epoch(int year) const;
     int adjust_post_epoch(int year) const;
   };

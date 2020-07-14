@@ -158,7 +158,9 @@ namespace ever {
 
   instant::instant(): timestamp(0) {}
 
-  instant::instant(long long w): timestamp(w) {}
+  instant::instant(long long w, int ms): timestamp(w*millis) {
+    timestamp += ms;
+  }
 
   std::pair<int, int> normalize(int high, int low, int base) {
     if (low < 0) {
@@ -214,19 +216,21 @@ namespace ever {
     }
     d += day - 1;
 
-    timestamp += d * secondsPerDay;
-    timestamp += hour * secondsPerHour;
-    timestamp += min * secondsPerMin;
-    timestamp += sec;
+    long long seconds = 0;
+    seconds += d * secondsPerDay;
+    seconds += hour * secondsPerHour;
+    seconds += min * secondsPerMin;
+    seconds += sec;
 
     if (year < epoch) {
       if (mon <= 2 && is_leap(year)) {
-        timestamp -= secondsPerDay;
+        seconds -= secondsPerDay;
       }
-      timestamp += adjust_pre_epoch(year);
+      seconds += adjust_pre_epoch(year);
     } else {
-      timestamp += adjust_post_epoch(year);
+      seconds += adjust_post_epoch(year);
     }
+    timestamp = seconds * millis;
   }
 
   instant::instant(const instant &w): timestamp(w.timestamp) {}
@@ -309,7 +313,7 @@ namespace ever {
   }
 
   long long instant::unix() const {
-    return timestamp;
+    return get_seconds();
   }
 
   std::tuple<int,int,int> instant::date() const {
@@ -343,7 +347,7 @@ namespace ever {
 
   int instant::week_day() const {
     // 1st january of 1970 was a thursday (5th day of the week)
-    int wd = (timestamp + (5*secondsPerDay)) % secondsPerWeek;
+    int wd = (get_seconds() + (5*secondsPerDay)) % secondsPerWeek;
     return wd/secondsPerDay;
   }
 
@@ -384,11 +388,11 @@ namespace ever {
   }
 
   long long instant::diff(const instant &w) const {
-    return timestamp - w.timestamp;
+    return get_seconds() - w.get_seconds();
   }
 
   instant instant::add(int sec) const {
-    return instant(timestamp+sec);
+    return instant(timestamp+(sec*millis));
   }
 
   instant instant::add(int y, int m, int d) const {
@@ -433,7 +437,7 @@ namespace ever {
   instant instant::to_gps() const {
     int sec = 0;
     for (auto s: leap_seconds) {
-      if (timestamp < s) {
+      if (timestamp < s * millis) {
         break;
       }
       sec++;
@@ -449,8 +453,7 @@ namespace ever {
   // %h: hour
   // %m: minute
   // %s: second
-  // %R: rfc3339: yyyy-mm-ddThh:mm:ss
-  // %I: rfc3339: yyyy-mm-dd hh:mm:ss
+  // %f: millisecond
   // %%: literal %
   std::string instant::format(std::string pattern) const {
     std::ostringstream os;
@@ -473,7 +476,7 @@ namespace ever {
         }
         switch (*it) {
           case 'S':
-          os << timestamp;
+          os << get_seconds();
           break;
           case 'Y':
           os << std::setw(4) << std::setfill('0') << y;
@@ -495,6 +498,8 @@ namespace ever {
           break;
           case 's':
           os << std::setw(2) << std::setfill('0') << s;
+          case 'f':
+          os << std::setw(3) << std::setfill('0') << get_millis();
           break;
           default:
           os << "?";
@@ -525,7 +530,7 @@ namespace ever {
       return std::make_tuple(epoch, 1, 1);
     }
     bool before = false;
-    long long base = timestamp;
+    long long base = get_seconds();
     if (base < 0) {
       base = -base;
       before = true;
@@ -553,7 +558,7 @@ namespace ever {
     if (before) {
       year = -year - 1;
       d = daysYears - d;
-      if (timestamp % secondsPerDay == 0) {
+      if (get_seconds() % secondsPerDay == 0) {
         d++;
       }
     }
@@ -599,7 +604,7 @@ namespace ever {
   }
 
   std::tuple<int, int, int> instant::split_time() const {
-    long long seconds = timestamp;
+    long long seconds = get_seconds();
     if (seconds < 0) {
       seconds = -seconds;
     }
@@ -624,7 +629,16 @@ namespace ever {
     return std::make_tuple(h, m, s);
   }
 
+  long long instant::get_seconds() const {
+    return timestamp / millis;
+  }
+
+  int instant::get_millis() const {
+    return timestamp % millis;
+  }
+
   int instant::epoch = 1970;
+  int instant::millis = 1000;
 
   std::vector<int> instant::year_days{
     0,
