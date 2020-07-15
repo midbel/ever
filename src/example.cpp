@@ -35,7 +35,7 @@ void iter_dates() {
 void show_date(std::string str) {
   try {
     auto it = ever::instant::parse("%Y-%M-%D %h:%m:%s", str);
-    std::string got = it.to_string();
+    std::string got = it.format("%Y-%M-%D %h:%m:%s");
     std::cout << "* " << str << ": "
       << (got == str ? 'v' : 'x') << " - "
       << got
